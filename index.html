@@ -74,7 +74,24 @@
       border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
       background: var(--teal-soft); color: var(--teal-dark); border: 1px solid var(--teal-border);
     }
-    .header-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .header-sub { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .live-clock-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 1px 7px; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;
+      background: var(--surface-muted); color: #334155;
+    }
+    .past-date-banner {
+      background: var(--amber-soft); border-bottom: 1px solid #fde68a; color: #92400e;
+      padding: 8px 14px; font-size: 0.75rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .time-input-row { display: flex; align-items: center; gap: 6px; }
+    .btn-now {
+      padding: 9px 10px; border-radius: 10px; border: 1px solid var(--teal-border);
+      background: var(--teal-soft); color: var(--teal-dark); font-size: 0.72rem; font-weight: 700;
+      flex-shrink: 0; white-space: nowrap;
+    }
+    .btn-now:hover { background: #ccfbf1; }
 
     .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .segmented {
@@ -275,7 +292,10 @@
             <h1 id="headerBabyName" class="brand-title">Baby's Care Log</h1>
             <span id="dayBadge" class="day-badge">Day 7</span>
           </div>
-          <p id="headerDateSub" class="header-sub"></p>
+          <div class="header-sub">
+            <span id="headerDateSub"></span>
+            <span id="liveClockBadge" class="live-clock-pill" title="Current local time"></span>
+          </div>
         </div>
       </div>
 
@@ -285,6 +305,7 @@
           <button id="todayBtn" type="button" class="seg-btn">Today</button>
           <button id="nextDayBtn" type="button" class="seg-btn" title="Next day">&rarr;</button>
         </div>
+        <input id="headerDatePicker" type="date" class="btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" aria-label="Select date" />
 
         <div class="segmented">
           <button id="unitMlBtn" type="button" class="seg-btn">ml</button>
@@ -340,8 +361,9 @@
         </div>
         <div class="card-metric-row">
           <span id="feedCount" class="card-metric">0</span>
-          <span id="feedBreakdown" class="card-sub">0 BF · 0 Bottle</span>
+          <span id="feedLast" class="card-sub">No logs yet</span>
         </div>
+        <div id="feedBreakdown" class="card-sub" style="margin-top: 4px;">0 BF · 0 Bottle</div>
         <div class="progress-track">
           <div id="feedProgress" class="progress-fill" style="width: 0%; background: var(--teal);"></div>
         </div>
@@ -370,6 +392,11 @@
           <button type="button" data-tab="bottle" class="log-tab">Give Milk</button>
         </div>
 
+        <div id="pastDateBanner" class="past-date-banner hidden">
+          <span id="pastDateBannerText">Logging for past date</span>
+          <button id="bannerJumpTodayBtn" type="button" class="btn-outline" style="padding:3px 8px; font-size:0.7rem;">Switch to Today</button>
+        </div>
+
         <div class="logger-body">
           <!-- Diaper Form -->
           <form id="diaperForm" class="form-stack">
@@ -393,7 +420,10 @@
               </div>
               <div>
                 <label class="field-label">Time</label>
-                <input id="diaperTime" type="time" class="input" />
+                <div class="time-input-row">
+                  <input id="diaperTime" type="time" class="input" />
+                  <button type="button" data-now-for="diaperTime" class="btn-now" title="Use current time">Now</button>
+                </div>
               </div>
             </div>
 
@@ -445,7 +475,10 @@
               </div>
               <div>
                 <label class="field-label">Start Time</label>
-                <input id="bfTime" type="time" class="input" />
+                <div class="time-input-row">
+                  <input id="bfTime" type="time" class="input" />
+                  <button type="button" data-now-for="bfTime" class="btn-now" title="Use current time">Now</button>
+                </div>
               </div>
             </div>
 
@@ -513,7 +546,10 @@
               </div>
               <div>
                 <label class="field-label">Time</label>
-                <input id="pumpTime" type="time" class="input" />
+                <div class="time-input-row">
+                  <input id="pumpTime" type="time" class="input" />
+                  <button type="button" data-now-for="pumpTime" class="btn-now" title="Use current time">Now</button>
+                </div>
               </div>
             </div>
 
@@ -566,7 +602,10 @@
               </div>
               <div>
                 <label class="field-label">Time</label>
-                <input id="bottleTime" type="time" class="input" />
+                <div class="time-input-row">
+                  <input id="bottleTime" type="time" class="input" />
+                  <button type="button" data-now-for="bottleTime" class="btn-now" title="Use current time">Now</button>
+                </div>
               </div>
             </div>
 
@@ -748,6 +787,23 @@
         return Math.round((new Date(ey, em - 1, ed) - new Date(sy, sm - 1, sd)) / 86400000);
       }
 
+      function formatShortDate(isoDate) {
+        if (!isoDate) return '';
+        const [y, m, d] = isoDate.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+        });
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function defaultState() {
         const today = getTodayISO();
         return {
@@ -765,12 +821,14 @@
           diaperType: 'pee',
           bfSide: 'Both',
           milkType: 'EBM',
+          bfTimer: { running: false, startedAt: null, accumulatedSec: 0, startHM: '' },
           logs: [],
           stash: []
         };
       }
 
       let state = defaultState();
+      let lastKnownToday = getTodayISO();
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
@@ -779,7 +837,10 @@
             state = {
               ...defaultState(),
               ...parsed,
+              // Always open on Today so a stale selectedDate from a previous session never mis-logs events
+              selectedDate: getTodayISO(),
               settings: { ...defaultState().settings, ...parsed.settings },
+              bfTimer: { ...defaultState().bfTimer, ...(parsed.bfTimer || {}) },
               stash: Array.isArray(parsed.stash) ? parsed.stash : []
             };
           }
@@ -840,51 +901,127 @@
         toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
       }
 
-      // Live Timer
+      // Live Nursing Timer (wall-clock based so phone sleep/lock doesn't lose elapsed time)
       let bfTimerInterval = null;
-      let bfTimerSeconds = 0;
-      let bfTimerRunning = false;
+
+      function getBfTimerSeconds() {
+        const t = state.bfTimer || { running: false, startedAt: null, accumulatedSec: 0 };
+        if (t.running && t.startedAt) {
+          return Math.max(0, t.accumulatedSec + Math.floor((Date.now() - t.startedAt) / 1000));
+        }
+        return Math.max(0, t.accumulatedSec || 0);
+      }
 
       function updateTimerUI() {
-        const mins = String(Math.floor(bfTimerSeconds / 60)).padStart(2, '0');
-        const secs = String(bfTimerSeconds % 60).padStart(2, '0');
+        const totalSecs = getBfTimerSeconds();
+        const mins = String(Math.floor(totalSecs / 60)).padStart(2, '0');
+        const secs = String(totalSecs % 60).padStart(2, '0');
         document.getElementById('bfTimerDisplay').textContent = `${mins}:${secs}`;
-        document.getElementById('bfTimerStartBtn').textContent = bfTimerRunning ? 'Pause' : (bfTimerSeconds > 0 ? 'Resume' : 'Start');
+        const running = Boolean(state.bfTimer && state.bfTimer.running);
+        document.getElementById('bfTimerStartBtn').textContent = running ? 'Pause' : (totalSecs > 0 ? 'Resume' : 'Start');
+      }
+
+      function ensureBfTimerTick() {
+        if (bfTimerInterval) clearInterval(bfTimerInterval);
+        if (state.bfTimer && state.bfTimer.running) {
+          bfTimerInterval = setInterval(updateTimerUI, 1000);
+        } else {
+          bfTimerInterval = null;
+        }
+        updateTimerUI();
+      }
+
+      function resetBfTimer() {
+        state.bfTimer = { running: false, startedAt: null, accumulatedSec: 0, startHM: '' };
+        saveState();
+        ensureBfTimerTick();
       }
 
       document.getElementById('bfTimerStartBtn').addEventListener('click', () => {
-        if (bfTimerRunning) {
-          clearInterval(bfTimerInterval);
-          bfTimerInterval = null;
-          bfTimerRunning = false;
-          if (bfTimerSeconds >= 30) {
-            document.getElementById('bfDuration').value = Math.max(1, Math.round(bfTimerSeconds / 60));
+        const totalSecs = getBfTimerSeconds();
+        if (state.bfTimer && state.bfTimer.running) {
+          state.bfTimer.accumulatedSec = totalSecs;
+          state.bfTimer.startedAt = null;
+          state.bfTimer.running = false;
+          if (totalSecs >= 30) {
+            document.getElementById('bfDuration').value = Math.max(1, Math.round(totalSecs / 60));
           }
         } else {
-          bfTimerRunning = true;
-          if (bfTimerSeconds === 0) document.getElementById('bfTime').value = getCurrentTimeHM();
-          bfTimerInterval = setInterval(() => {
-            bfTimerSeconds += 1;
-            updateTimerUI();
-          }, 1000);
+          if (totalSecs === 0) {
+            const nowHM = getCurrentTimeHM();
+            state.bfTimer.startHM = nowHM;
+            const bfTimeEl = document.getElementById('bfTime');
+            bfTimeEl.value = nowHM;
+            bfTimeEl.dataset.userEdited = 'true';
+          }
+          state.bfTimer.startedAt = Date.now();
+          state.bfTimer.running = true;
         }
-        updateTimerUI();
+        saveState();
+        ensureBfTimerTick();
       });
 
       document.getElementById('bfTimerResetBtn').addEventListener('click', () => {
-        if (bfTimerInterval) clearInterval(bfTimerInterval);
-        bfTimerInterval = null;
-        bfTimerRunning = false;
-        bfTimerSeconds = 0;
-        updateTimerUI();
+        resetBfTimer();
+        const bfTimeEl = document.getElementById('bfTime');
+        bfTimeEl.dataset.userEdited = 'false';
+        bfTimeEl.value = getCurrentTimeHM();
       });
 
-      function syncFormTimes() {
-        const nowHM = getCurrentTimeHM();
-        ['diaperTime', 'bfTime', 'pumpTime', 'bottleTime'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el && !el.value) el.value = nowHM;
+      // Time Input Management: keep inputs synced to current time unless manually edited
+      const TIME_INPUT_IDS = ['diaperTime', 'bfTime', 'pumpTime', 'bottleTime'];
+
+      TIME_INPUT_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.dataset.userEdited = 'false';
+        el.addEventListener('input', () => {
+          el.dataset.userEdited = 'true';
         });
+        el.addEventListener('change', () => {
+          el.dataset.userEdited = 'true';
+        });
+      });
+
+      document.querySelectorAll('[data-now-for]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.dataset.nowFor;
+          const el = document.getElementById(targetId);
+          if (el) {
+            el.value = getCurrentTimeHM();
+            el.dataset.userEdited = 'false';
+            showToast(`Set time to now (${formatTime12(el.value)})`);
+          }
+        });
+      });
+
+      function syncFormTimes(forceAll = false) {
+        const nowHM = getCurrentTimeHM();
+        TIME_INPUT_IDS.forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (!forceAll && id === 'bfTime' && getBfTimerSeconds() > 0) return;
+          if (forceAll || el.dataset.userEdited !== 'true' || !el.value) {
+            el.value = nowHM;
+            el.dataset.userEdited = 'false';
+          }
+        });
+      }
+
+      function getEffectiveLogTime(inputId) {
+        const el = document.getElementById(inputId);
+        if (el && el.dataset.userEdited === 'true' && el.value) {
+          return el.value;
+        }
+        return getCurrentTimeHM();
+      }
+
+      function resetTimeInputToNow(inputId) {
+        const el = document.getElementById(inputId);
+        if (el) {
+          el.value = getCurrentTimeHM();
+          el.dataset.userEdited = 'false';
+        }
       }
 
       function setActiveTab(tabName) {
@@ -896,6 +1033,7 @@
         document.getElementById('bfForm').classList.toggle('hidden', tabName !== 'breastfeed');
         document.getElementById('pumpForm').classList.toggle('hidden', tabName !== 'pump');
         document.getElementById('bottleForm').classList.toggle('hidden', tabName !== 'bottle');
+        syncFormTimes(false);
         saveState();
       }
 
@@ -942,10 +1080,23 @@
         btn.addEventListener('click', () => setMilkType(btn.dataset.milkType));
       });
 
+      // Check if midnight passed before logging or on tick
+      function ensureCurrentDateIfFollowingToday() {
+        const currentToday = getTodayISO();
+        if (currentToday !== lastKnownToday) {
+          if (state.selectedDate === lastKnownToday) {
+            state.selectedDate = currentToday;
+          }
+          lastKnownToday = currentToday;
+          saveState();
+        }
+      }
+
       // Form Submits
       document.getElementById('diaperForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const time = document.getElementById('diaperTime').value || getCurrentTimeHM();
+        ensureCurrentDateIfFollowingToday();
+        const time = getEffectiveLogTime('diaperTime');
         const size = document.getElementById('diaperSize').value;
         const poopColor = document.getElementById('poopColor').value;
         const note = document.getElementById('diaperNote').value.trim();
@@ -953,30 +1104,31 @@
         if (state.diaperType === 'both') {
           state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'pee', size, note: note ? `With poop · ${note}` : 'With poop' });
           state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'poop', size, poopColor, note: note ? `With pee · ${note}` : 'With pee' });
-          showToast('Logged pee + poop diaper');
+          showToast(`Logged pee + poop diaper at ${formatTime12(time)}`);
         } else {
           state.logs.push({ id: uid(), date: state.selectedDate, time, category: state.diaperType, size, poopColor: state.diaperType === 'poop' ? poopColor : undefined, note });
-          showToast(`Logged ${state.diaperType} diaper`);
+          showToast(`Logged ${state.diaperType} diaper at ${formatTime12(time)}`);
         }
 
         document.getElementById('diaperNote').value = '';
-        document.getElementById('diaperTime').value = getCurrentTimeHM();
+        resetTimeInputToNow('diaperTime');
         saveState();
         render();
       });
 
       document.getElementById('bfForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        if (bfTimerRunning) {
-          clearInterval(bfTimerInterval);
-          bfTimerInterval = null;
-          bfTimerRunning = false;
-          if (bfTimerSeconds >= 30) document.getElementById('bfDuration').value = Math.max(1, Math.round(bfTimerSeconds / 60));
-          bfTimerSeconds = 0;
-          updateTimerUI();
+        ensureCurrentDateIfFollowingToday();
+        const timerSecs = getBfTimerSeconds();
+        if (timerSecs >= 30) {
+          document.getElementById('bfDuration').value = Math.max(1, Math.round(timerSecs / 60));
         }
 
-        const time = document.getElementById('bfTime').value || getCurrentTimeHM();
+        const time = (timerSecs > 0 && state.bfTimer && state.bfTimer.startHM)
+          ? state.bfTimer.startHM
+          : getEffectiveLogTime('bfTime');
+        resetBfTimer();
+
         const duration = parseInt(document.getElementById('bfDuration').value, 10) || 15;
         const cue = document.getElementById('bfCue').value;
         const note = document.getElementById('bfNote').value.trim();
@@ -989,27 +1141,29 @@
         if (alsoPump && pumpVolMl > 0) {
           const pumpSide = document.getElementById('bfPumpSide').value;
           const stashId = uid();
-          state.stash.push({ id: stashId, date: state.selectedDate, time, totalMl: pumpVolMl, remainingMl: pumpVolMl, storage: 'Fridge', postBf: true, note: `Pumped after ${state.bfSide} breastfeed` });
-          state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'pump', volumeMl: pumpVolMl, side: pumpSide, duration: 10, storage: 'Fridge', postBf: true, linkedBfId: bfId, stashId, note: 'Soon after breastfeeding' });
+          const pumpTime = getCurrentTimeHM();
+          state.stash.push({ id: stashId, date: state.selectedDate, time: pumpTime, totalMl: pumpVolMl, remainingMl: pumpVolMl, storage: 'Fridge', postBf: true, note: `Pumped after ${state.bfSide} breastfeed` });
+          state.logs.push({ id: uid(), date: state.selectedDate, time: pumpTime, category: 'pump', volumeMl: pumpVolMl, side: pumpSide, duration: 10, storage: 'Fridge', postBf: true, linkedBfId: bfId, stashId, note: 'Soon after breastfeeding' });
           showToast(`Logged breastfeed + ${formatVol(pumpVolMl)} post-feed pump`);
         } else {
-          showToast('Logged breastfeed');
+          showToast(`Logged breastfeed at ${formatTime12(time)}`);
         }
 
         document.getElementById('bfNote').value = '';
         document.getElementById('bfPumpVol').value = '';
         document.getElementById('bfAlsoPump').checked = false;
         document.getElementById('bfPumpFields').classList.add('hidden');
-        document.getElementById('bfTime').value = getCurrentTimeHM();
+        resetTimeInputToNow('bfTime');
         saveState();
         render();
       });
 
       document.getElementById('pumpForm').addEventListener('submit', (e) => {
         e.preventDefault();
+        ensureCurrentDateIfFollowingToday();
         const volMl = toMl(document.getElementById('pumpVol').value);
         if (volMl <= 0) { showToast('Enter a valid pump volume'); return; }
-        const time = document.getElementById('pumpTime').value || getCurrentTimeHM();
+        const time = getEffectiveLogTime('pumpTime');
         const duration = parseInt(document.getElementById('pumpDuration').value, 10) || 15;
         const side = document.getElementById('pumpSide').value;
         const storage = document.getElementById('pumpStorage').value;
@@ -1022,36 +1176,50 @@
 
         document.getElementById('pumpVol').value = '';
         document.getElementById('pumpNote').value = '';
-        document.getElementById('pumpTime').value = getCurrentTimeHM();
-        showToast(`Logged ${formatVol(volMl)} pump & added to stash`);
+        resetTimeInputToNow('pumpTime');
+        showToast(`Logged ${formatVol(volMl)} pump at ${formatTime12(time)}`);
         saveState();
         render();
       });
 
       document.getElementById('bottleForm').addEventListener('submit', (e) => {
         e.preventDefault();
+        ensureCurrentDateIfFollowingToday();
         const volMl = toMl(document.getElementById('bottleVol').value);
         if (volMl <= 0) { showToast('Enter a valid amount given'); return; }
-        const time = document.getElementById('bottleTime').value || getCurrentTimeHM();
+        const time = getEffectiveLogTime('bottleTime');
         const cue = document.getElementById('bottleCue').value;
         const note = document.getElementById('bottleNote').value.trim();
         const stashId = state.milkType === 'EBM' ? document.getElementById('bottleStashId').value : '';
 
         let usedFromStash = false;
+        let stashDeductedMl = 0;
         if (stashId) {
           const batch = state.stash.find(b => b.id === stashId);
-          if (batch) {
-            batch.remainingMl = Math.max(0, batch.remainingMl - volMl);
+          if (batch && batch.remainingMl > 0) {
+            stashDeductedMl = Math.min(batch.remainingMl, volMl);
+            batch.remainingMl = Math.max(0, batch.remainingMl - stashDeductedMl);
             usedFromStash = true;
           }
         }
 
-        state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'bottle', milkType: state.milkType, volumeMl: volMl, cue, stashId: usedFromStash ? stashId : undefined, note });
+        state.logs.push({
+          id: uid(),
+          date: state.selectedDate,
+          time,
+          category: 'bottle',
+          milkType: state.milkType,
+          volumeMl: volMl,
+          cue,
+          stashId: usedFromStash ? stashId : undefined,
+          stashDeductedMl: usedFromStash ? stashDeductedMl : undefined,
+          note
+        });
 
         document.getElementById('bottleVol').value = '';
         document.getElementById('bottleNote').value = '';
-        document.getElementById('bottleTime').value = getCurrentTimeHM();
-        showToast(`Logged ${formatVol(volMl)} ${state.milkType === 'EBM' ? 'expressed milk' : 'formula'} feed`);
+        resetTimeInputToNow('bottleTime');
+        showToast(`Logged ${formatVol(volMl)} ${state.milkType === 'EBM' ? 'expressed milk' : 'formula'} at ${formatTime12(time)}`);
         saveState();
         render();
       });
@@ -1066,9 +1234,24 @@
         });
       });
 
+      function jumpToToday() {
+        state.selectedDate = getTodayISO();
+        syncFormTimes(true);
+        saveState();
+        render();
+      }
+
       document.getElementById('prevDayBtn').addEventListener('click', () => { state.selectedDate = addDaysISO(state.selectedDate, -1); saveState(); render(); });
       document.getElementById('nextDayBtn').addEventListener('click', () => { state.selectedDate = addDaysISO(state.selectedDate, 1); saveState(); render(); });
-      document.getElementById('todayBtn').addEventListener('click', () => { state.selectedDate = getTodayISO(); saveState(); render(); });
+      document.getElementById('todayBtn').addEventListener('click', jumpToToday);
+      document.getElementById('bannerJumpTodayBtn').addEventListener('click', jumpToToday);
+      document.getElementById('headerDatePicker').addEventListener('change', (e) => {
+        if (e.target.value) {
+          state.selectedDate = e.target.value;
+          saveState();
+          render();
+        }
+      });
 
       document.getElementById('unitMlBtn').addEventListener('click', () => { state.settings.unit = 'ml'; saveState(); render(); });
       document.getElementById('unitOzBtn').addEventListener('click', () => { state.settings.unit = 'oz'; saveState(); render(); });
@@ -1116,7 +1299,13 @@
           try {
             const parsed = JSON.parse(reader.result);
             if (parsed && parsed.settings && Array.isArray(parsed.logs)) {
-              state = { ...defaultState(), ...parsed };
+              state = {
+                ...defaultState(),
+                ...parsed,
+                selectedDate: getTodayISO(),
+                settings: { ...defaultState().settings, ...parsed.settings },
+                stash: Array.isArray(parsed.stash) ? parsed.stash : []
+              };
               saveState();
               render();
               document.getElementById('settingsModal').classList.add('hidden');
@@ -1139,6 +1328,7 @@
       document.getElementById('confirmClearBtn').addEventListener('click', () => {
         state.logs = [];
         state.stash = [];
+        resetBfTimer();
         document.getElementById('confirmModal').classList.add('hidden');
         saveState();
         render();
@@ -1204,14 +1394,14 @@
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                   <span style="font-size:0.78rem; font-weight:700;">${formatVol(b.remainingMl)}</span>
                   <span style="font-size:0.7rem; color:var(--text-muted);">of ${formatVol(b.totalMl)}</span>
-                  <span class="pill pill-violet">${b.storage}</span>
+                  <span class="pill pill-violet">${escapeHtml(b.storage)}</span>
                   ${b.postBf ? '<span class="pill pill-teal">Post-BF</span>' : ''}
                 </div>
                 <p style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Day ${dayNum} · ${formatTime12(b.time)} (${timeAgoText(b.date, b.time)})</p>
               </div>
               <div style="display:flex; align-items:center; gap:6px;">
-                <button type="button" data-give-stash="${b.id}" class="btn-sm btn-teal" style="color:#fff;">Give Now</button>
-                <button type="button" data-clear-stash="${b.id}" class="btn-outline" title="Mark finished">&times;</button>
+                <button type="button" data-give-stash="${escapeHtml(b.id)}" class="btn-sm btn-teal" style="color:#fff;">Give Now</button>
+                <button type="button" data-clear-stash="${escapeHtml(b.id)}" class="btn-outline" title="Mark finished">&times;</button>
               </div>
             </div>
           `;
@@ -1228,7 +1418,7 @@
             setMilkType('EBM');
             document.getElementById('bottleStashId').value = id;
             document.getElementById('bottleVol').value = state.settings.unit === 'oz' ? (batch.remainingMl / ML_PER_OZ).toFixed(1) : Math.round(batch.remainingMl);
-            document.getElementById('bottleTime').value = getCurrentTimeHM();
+            resetTimeInputToNow('bottleTime');
             document.getElementById('bottleVol').focus();
             showToast('Ready to log expressed milk feed');
           }
@@ -1244,14 +1434,15 @@
       // Render Timeline
       function renderTimeline() {
         const dayNum = diffDaysISO(state.settings.birthDate, state.selectedDate);
-        document.getElementById('timelineTitle').textContent = `Day ${dayNum} Timeline`;
+        const isToday = state.selectedDate === getTodayISO();
+        document.getElementById('timelineTitle').textContent = `Day ${dayNum} Timeline${isToday ? ' (Today)' : ` (${state.selectedDate.slice(5)})`}`;
         let dayLogs = state.logs.filter(l => l.date === state.selectedDate);
         if (state.activeFilter !== 'all') dayLogs = dayLogs.filter(l => l.category === state.activeFilter);
         dayLogs.sort((a, b) => b.time.localeCompare(a.time));
 
         const listEl = document.getElementById('timelineList');
         if (dayLogs.length === 0) {
-          listEl.innerHTML = `<div class="empty-box">No ${state.activeFilter === 'all' ? '' : state.activeFilter + ' '}entries logged for Day ${dayNum} yet.</div>`;
+          listEl.innerHTML = `<div class="empty-box">No ${state.activeFilter === 'all' ? '' : escapeHtml(state.activeFilter) + ' '}entries logged for Day ${dayNum} yet.</div>`;
           return;
         }
 
@@ -1277,14 +1468,14 @@
               <div class="timeline-left">
                 <div class="cat-icon ${m.cls}">${m.icon}</div>
                 <div>
-                  <div style="font-size:0.78rem;"><strong>${m.label}</strong> · ${summary}</div>
-                  ${sub ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${sub}</div>` : ''}
-                  ${log.note ? `<div style="font-size:0.7rem; color:#475569; font-style:italic; margin-top:2px;">"${log.note}"</div>` : ''}
+                  <div style="font-size:0.78rem;"><strong>${escapeHtml(m.label)}</strong> · ${escapeHtml(summary)}</div>
+                  ${sub ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(sub)}</div>` : ''}
+                  ${log.note ? `<div style="font-size:0.7rem; color:#475569; font-style:italic; margin-top:2px;">"${escapeHtml(log.note)}"</div>` : ''}
                 </div>
               </div>
               <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                 <span style="font-size:0.72rem; color:var(--text-muted); font-weight:500;">${formatTime12(log.time)}</span>
-                <button type="button" data-delete-log="${log.id}" style="font-size:1rem; color:#94a3b8;" title="Delete">&times;</button>
+                <button type="button" data-delete-log="${escapeHtml(log.id)}" style="font-size:1rem; color:#94a3b8;" title="Delete">&times;</button>
               </div>
             </div>
           `;
@@ -1296,9 +1487,14 @@
         if (delBtn) {
           const id = delBtn.dataset.deleteLog;
           const log = state.logs.find(l => l.id === id);
-          if (log && log.category === 'bottle' && log.stashId) {
-            const batch = state.stash.find(b => b.id === log.stashId);
-            if (batch) batch.remainingMl = Math.min(batch.totalMl, batch.remainingMl + (log.volumeMl || 0));
+          if (log) {
+            if (log.category === 'bottle' && log.stashId) {
+              const batch = state.stash.find(b => b.id === log.stashId);
+              const restoreMl = log.stashDeductedMl !== undefined ? log.stashDeductedMl : (log.volumeMl || 0);
+              if (batch) batch.remainingMl = Math.min(batch.totalMl, batch.remainingMl + restoreMl);
+            } else if (log.category === 'pump' && log.stashId) {
+              state.stash = state.stash.filter(b => b.id !== log.stashId);
+            }
           }
           state.logs = state.logs.filter(l => l.id !== id);
           saveState();
@@ -1308,7 +1504,8 @@
       });
 
       function renderHistory() {
-        const datesSet = new Set([state.selectedDate, getTodayISO()]);
+        const todayISO = getTodayISO();
+        const datesSet = new Set([state.selectedDate, todayISO]);
         state.logs.forEach(l => datesSet.add(l.date));
         const dates = Array.from(datesSet).sort((a, b) => b.localeCompare(a));
 
@@ -1320,9 +1517,10 @@
           const feeds = dayLogs.filter(l => l.category === 'breastfeed' || l.category === 'bottle').length;
           const pumped = dayLogs.filter(l => l.category === 'pump').reduce((s, l) => s + (l.volumeMl || 0), 0);
           const bottle = dayLogs.filter(l => l.category === 'bottle').reduce((s, l) => s + (l.volumeMl || 0), 0);
+          const isToday = d === todayISO;
           return `
-            <tr data-jump-date="${d}" class="${d === state.selectedDate ? 'selected-row' : ''}">
-              <td>Day ${dayNum} <span style="color:var(--text-muted); font-weight:400;">(${d.slice(5)})</span></td>
+            <tr data-jump-date="${escapeHtml(d)}" class="${d === state.selectedDate ? 'selected-row' : ''}">
+              <td>Day ${dayNum} <span style="color:var(--text-muted); font-weight:400;">(${escapeHtml(d.slice(5))}${isToday ? ' · Today' : ''})</span></td>
               <td style="color:var(--sky);">${pee}</td>
               <td style="color:var(--amber);">${poop}</td>
               <td style="color:var(--teal);">${feeds}</td>
@@ -1338,54 +1536,114 @@
         if (row) { state.selectedDate = row.dataset.jumpDate; saveState(); render(); }
       });
 
+      function findLatestLogForCard(categories, dayLogs, isToday, todayISO) {
+        const matchingDay = dayLogs
+          .filter(l => categories.includes(l.category))
+          .sort((a, b) => b.time.localeCompare(a.time));
+        if (matchingDay.length > 0) return matchingDay[0];
+        if (!isToday) return null;
+        // If viewing Today and no log since midnight yet, show most recent from previous days
+        const matchingAll = state.logs
+          .filter(l => categories.includes(l.category) && l.date <= todayISO)
+          .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+        return matchingAll.length > 0 ? matchingAll[0] : null;
+      }
+
       function render() {
+        const todayISO = getTodayISO();
+        const isToday = state.selectedDate === todayISO;
         const dayNum = diffDaysISO(state.settings.birthDate, state.selectedDate);
         document.getElementById('headerBabyName').textContent = `${state.settings.babyName}'s Care Log`;
         document.getElementById('dayBadge').textContent = `Day ${dayNum}`;
 
-        const [y, m, d] = state.selectedDate.split('-').map(Number);
-        document.getElementById('headerDateSub').textContent = new Date(y, m - 1, d).toLocaleDateString('en-US', {
-          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
-        });
+        const formattedSelected = formatShortDate(state.selectedDate);
+        document.getElementById('headerDateSub').textContent = isToday
+          ? `Today · ${formattedSelected}`
+          : `Viewing ${formattedSelected}`;
+
+        const nowHM = getCurrentTimeHM();
+        document.getElementById('liveClockBadge').textContent = isToday
+          ? `Now: ${formatTime12(nowHM)}`
+          : `Today: ${formatShortDate(todayISO).split(',')[0]} · ${formatTime12(nowHM)}`;
+
+        document.getElementById('todayBtn').classList.toggle('active', isToday);
+        const datePicker = document.getElementById('headerDatePicker');
+        if (datePicker && datePicker.value !== state.selectedDate) {
+          datePicker.value = state.selectedDate;
+        }
+
+        const pastBanner = document.getElementById('pastDateBanner');
+        if (isToday) {
+          pastBanner.classList.add('hidden');
+        } else {
+          pastBanner.classList.remove('hidden');
+          document.getElementById('pastDateBannerText').textContent = `Logging for Day ${dayNum} (${formattedSelected}) — not Today`;
+        }
 
         document.getElementById('unitMlBtn').classList.toggle('active', state.settings.unit === 'ml');
         document.getElementById('unitOzBtn').classList.toggle('active', state.settings.unit === 'oz');
         document.querySelectorAll('.unit-label').forEach(el => { el.textContent = state.settings.unit; });
 
         const dayLogs = state.logs.filter(l => l.date === state.selectedDate);
-        const pees = dayLogs.filter(l => l.category === 'pee').sort((a, b) => b.time.localeCompare(a.time));
-        const poops = dayLogs.filter(l => l.category === 'poop').sort((a, b) => b.time.localeCompare(a.time));
+        const pees = dayLogs.filter(l => l.category === 'pee');
+        const poops = dayLogs.filter(l => l.category === 'poop');
         const bfs = dayLogs.filter(l => l.category === 'breastfeed');
         const bottles = dayLogs.filter(l => l.category === 'bottle');
         const pumps = dayLogs.filter(l => l.category === 'pump');
 
+        const lastPee = findLatestLogForCard(['pee'], dayLogs, isToday, todayISO);
         document.getElementById('peeTargetLabel').textContent = `Target ${state.settings.peeTarget}+`;
         document.getElementById('peeCount').textContent = pees.length;
-        document.getElementById('peeLast').textContent = pees.length ? `Last: ${timeAgoText(pees[0].date, pees[0].time)}` : 'No logs yet';
+        document.getElementById('peeLast').textContent = lastPee
+          ? (isToday ? `Last: ${timeAgoText(lastPee.date, lastPee.time)}` : `Last: ${formatTime12(lastPee.time)}`)
+          : 'No logs yet';
         document.getElementById('peeProgress').style.width = `${Math.min(100, Math.round((pees.length / state.settings.peeTarget) * 100))}%`;
 
+        const lastPoop = findLatestLogForCard(['poop'], dayLogs, isToday, todayISO);
         document.getElementById('poopTargetLabel').textContent = `Target ${state.settings.poopTarget}+`;
         document.getElementById('poopCount').textContent = poops.length;
-        document.getElementById('poopLast').textContent = poops.length ? `Last: ${timeAgoText(poops[0].date, poops[0].time)}` : 'No logs yet';
+        document.getElementById('poopLast').textContent = lastPoop
+          ? (isToday ? `Last: ${timeAgoText(lastPoop.date, lastPoop.time)}` : `Last: ${formatTime12(lastPoop.time)}`)
+          : 'No logs yet';
         document.getElementById('poopProgress').style.width = `${Math.min(100, Math.round((poops.length / state.settings.poopTarget) * 100))}%`;
 
         const totalFeeds = bfs.length + bottles.length;
+        const lastFeed = findLatestLogForCard(['breastfeed', 'bottle'], dayLogs, isToday, todayISO);
         document.getElementById('feedTargetLabel').textContent = `Target ${state.settings.feedTarget}–12`;
         document.getElementById('feedCount').textContent = totalFeeds;
+        document.getElementById('feedLast').textContent = lastFeed
+          ? (isToday ? `Last: ${timeAgoText(lastFeed.date, lastFeed.time)}` : `Last: ${formatTime12(lastFeed.time)}`)
+          : 'No logs yet';
         document.getElementById('feedBreakdown').textContent = `${bfs.length} BF · ${bottles.length} Bottle`;
         document.getElementById('feedProgress').style.width = `${Math.min(100, Math.round((totalFeeds / state.settings.feedTarget) * 100))}%`;
 
         const pumpedTodayMl = pumps.reduce((s, l) => s + (l.volumeMl || 0), 0);
         const bottleTodayMl = bottles.reduce((s, l) => s + (l.volumeMl || 0), 0);
-        document.getElementById('pumpedToday').textContent = `Today: ${formatVol(pumpedTodayMl)}`;
-        document.getElementById('bottleTodaySummary').textContent = `Given today: ${formatVol(bottleTodayMl)}`;
+        document.getElementById('pumpedToday').textContent = `${isToday ? 'Today' : `Day ${dayNum}`}: ${formatVol(pumpedTodayMl)}`;
+        document.getElementById('bottleTodaySummary').textContent = `Given ${isToday ? 'today' : `Day ${dayNum}`}: ${formatVol(bottleTodayMl)}`;
 
         renderStash();
         renderTimeline();
         renderHistory();
       }
 
-      syncFormTimes();
+      function refreshLiveClockAndDate() {
+        ensureCurrentDateIfFollowingToday();
+        syncFormTimes(false);
+        ensureBfTimerTick();
+        render();
+      }
+
+      // Keep current time & date synced while app is open or when returning from background
+      setInterval(refreshLiveClockAndDate, 15000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') refreshLiveClockAndDate();
+      });
+      window.addEventListener('focus', refreshLiveClockAndDate);
+      window.addEventListener('pageshow', refreshLiveClockAndDate);
+
+      syncFormTimes(true);
+      ensureBfTimerTick();
       setActiveTab(state.activeTab || 'diaper');
       setDiaperType(state.diaperType || 'pee');
       setBfSide(state.bfSide || 'Both');
