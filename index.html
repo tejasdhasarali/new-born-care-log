@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Newborn Care Log — Day 7+</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-muted: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --teal: #0d9488;
+      --teal-dark: #0f766e;
+      --teal-soft: #f0fdfa;
+      --teal-border: #99f6e4;
+      --sky: #0284c7;
+      --sky-soft: #e0f2fe;
+      --amber: #d97706;
+      --amber-soft: #fef3c7;
+      --violet: #7c3aed;
+      --violet-dark: #6d28d9;
+      --violet-soft: #f5f3ff;
+      --violet-border: #ddd6fe;
+      --emerald-soft: #d1fae5;
+      --rose: #e11d48;
+      --rose-border: #fecdd3;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      min-height: 100vh;
+      padding-bottom: 4rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; background: none; border: none; }
+    .hidden { display: none !important; }
+
+    /* Header */
+    .app-header {
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .container { max-width: 1024px; margin: 0 auto; padding: 0 16px; }
+    .header-inner {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 12px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 12px;
+      background: var(--teal); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-title-row { display: flex; align-items: center; gap: 8px; }
+    .brand-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+    .day-badge {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
+      background: var(--teal-soft); color: var(--teal-dark); border: 1px solid var(--teal-border);
+    }
+    .header-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .segmented {
+      display: inline-flex; align-items: center; padding: 2px;
+      border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+    }
+    .seg-btn {
+      padding: 6px 10px; font-size: 0.75rem; font-weight: 600;
+      border-radius: 8px; color: #334155; transition: background 0.15s, color 0.15s;
+    }
+    .seg-btn:hover { background: #fff; }
+    .seg-btn.active { background: var(--text); color: #fff; }
+    .btn-outline {
+      padding: 6px 10px; font-size: 0.75rem; font-weight: 600;
+      border-radius: 10px; border: 1px solid var(--border); background: #fff; color: #334155;
+    }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-icon {
+      padding: 7px; border-radius: 10px; border: 1px solid var(--border);
+      background: #fff; color: #475569; display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    /* Main Layout */
+    main { padding-top: 20px; display: flex; flex-direction: column; gap: 20px; }
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+    }
+    @media (min-width: 900px) {
+      .summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .card-kicker { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .kicker-sky { color: #0369a1; }
+    .kicker-amber { color: #b45309; }
+    .kicker-teal { color: var(--teal-dark); }
+    .kicker-violet { color: var(--violet-dark); }
+    .card-target { font-size: 0.75rem; color: var(--text-muted); }
+    .card-metric-row { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .card-metric { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+    .card-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .progress-track {
+      margin-top: 10px; height: 6px; width: 100%; background: var(--surface-muted);
+      border-radius: 9999px; overflow: hidden;
+    }
+    .progress-fill { height: 100%; border-radius: 9999px; transition: width 0.25s ease; }
+
+    .workspace-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+    @media (min-width: 960px) {
+      .workspace-grid { grid-template-columns: 5fr 7fr; }
+    }
+
+    /* Logger Panel */
+    .logger-card { padding: 0; overflow: hidden; }
+    .tabs-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+      padding: 6px; background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .log-tab {
+      padding: 8px 4px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;
+      color: #475569; text-align: center; transition: all 0.15s;
+    }
+    .log-tab.tab-active { background: var(--text); color: #fff; }
+    .logger-body { padding: 18px; }
+
+    .form-stack { display: flex; flex-direction: column; gap: 14px; }
+    .field-label { display: block; font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    .input, .select {
+      width: 100%; border-radius: 12px; border: 1px solid var(--border);
+      padding: 9px 12px; font-size: 0.875rem; background: #fff;
+    }
+    .input:focus, .select:focus { outline: 2px solid var(--teal); outline-offset: -1px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+    .chip-btn {
+      padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border);
+      font-size: 0.75rem; font-weight: 600; color: #334155; text-align: center;
+      background: #fff; transition: all 0.15s;
+    }
+    .chip-btn.chip-active { background: var(--text); color: #fff; border-color: var(--text); }
+
+    .timer-box {
+      border-radius: 14px; background: var(--teal-soft); border: 1px solid var(--teal-border);
+      padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .timer-val { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .btn-primary {
+      width: 100%; padding: 12px; border-radius: 12px; font-size: 0.875rem; font-weight: 600;
+      color: #fff; background: var(--text); transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.92; }
+    .btn-teal { background: var(--teal); }
+    .btn-violet { background: var(--violet); }
+    .btn-sm {
+      padding: 7px 11px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;
+    }
+
+    .post-pump-box {
+      border-radius: 12px; border: 1px solid var(--violet-border);
+      background: var(--violet-soft); padding: 12px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.75rem; font-weight: 600; color: #4c1d95; cursor: pointer;
+    }
+
+    /* Right Column */
+    .right-stack { display: flex; flex-direction: column; gap: 20px; }
+    .section-head {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 12px;
+    }
+    .section-title { font-size: 0.9rem; font-weight: 700; }
+    .section-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .stash-list, .timeline-list { display: flex; flex-direction: column; gap: 8px; }
+    .empty-box {
+      border-radius: 12px; border: 1px dashed #cbd5e1; padding: 18px;
+      text-align: center; font-size: 0.75rem; color: var(--text-muted);
+    }
+    .stash-item {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+      border-radius: 12px; border: 1px solid var(--border); background: var(--bg); padding: 10px 12px;
+    }
+    .pill {
+      display: inline-block; padding: 2px 8px; border-radius: 9999px;
+      font-size: 0.68rem; font-weight: 600;
+    }
+    .pill-violet { background: #ede9fe; color: #6d28d9; }
+    .pill-teal { background: var(--teal-soft); color: var(--teal-dark); }
+
+    .filter-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .filter-btn {
+      padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 0.72rem; font-weight: 600; color: #475569; background: #fff;
+    }
+    .filter-btn.chip-active { background: var(--text); color: #fff; border-color: var(--text); }
+
+    .timeline-item {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+      border-radius: 12px; border: 1px solid var(--border); padding: 11px 12px; background: #fff;
+    }
+    .timeline-left { display: flex; align-items: flex-start; gap: 10px; }
+    .cat-icon {
+      width: 32px; height: 32px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; flex-shrink: 0;
+    }
+    .cat-pee { background: var(--sky-soft); }
+    .cat-poop { background: var(--amber-soft); }
+    .cat-bf { background: var(--teal-soft); }
+    .cat-pump { background: var(--violet-soft); }
+    .cat-bottle { background: var(--emerald-soft); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; }
+    th { padding: 8px 6px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600; }
+    td { padding: 8px 6px; border-bottom: 1px solid var(--surface-muted); }
+    tr.selected-row { background: var(--teal-soft); font-weight: 600; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: var(--bg); }
+
+    /* Modals & Toast */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-card {
+      background: #fff; border-radius: 16px; border: 1px solid var(--border);
+      max-width: 420px; width: 100%; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 60; padding: 10px 16px; border-radius: 12px;
+      background: var(--text); color: #fff; font-size: 0.75rem; font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title-row">
+            <h1 id="headerBabyName" class="brand-title">Baby's Care Log</h1>
+            <span id="dayBadge" class="day-badge">Day 7</span>
+          </div>
+          <p id="headerDateSub" class="header-sub"></p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="segmented">
+          <button id="prevDayBtn" type="button" class="seg-btn" title="Previous day">&larr;</button>
+          <button id="todayBtn" type="button" class="seg-btn">Today</button>
+          <button id="nextDayBtn" type="button" class="seg-btn" title="Next day">&rarr;</button>
+        </div>
+
+        <div class="segmented">
+          <button id="unitMlBtn" type="button" class="seg-btn">ml</button>
+          <button id="unitOzBtn" type="button" class="seg-btn">oz</button>
+        </div>
+
+        <button id="exportCsvBtn" type="button" class="btn-outline">Export CSV</button>
+        <button id="settingsBtn" type="button" class="btn-icon" title="Settings &amp; Backup">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Daily Summary -->
+    <section class="summary-grid" aria-label="Daily Summary">
+      <div class="card">
+        <div class="card-top">
+          <span class="card-kicker kicker-sky">Pee (Wet)</span>
+          <span id="peeTargetLabel" class="card-target">Target 6+</span>
+        </div>
+        <div class="card-metric-row">
+          <span id="peeCount" class="card-metric">0</span>
+          <span id="peeLast" class="card-sub">No logs yet</span>
+        </div>
+        <div class="progress-track">
+          <div id="peeProgress" class="progress-fill" style="width: 0%; background: var(--sky);"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-kicker kicker-amber">Poop (Dirty)</span>
+          <span id="poopTargetLabel" class="card-target">Target 3+</span>
+        </div>
+        <div class="card-metric-row">
+          <span id="poopCount" class="card-metric">0</span>
+          <span id="poopLast" class="card-sub">No logs yet</span>
+        </div>
+        <div class="progress-track">
+          <div id="poopProgress" class="progress-fill" style="width: 0%; background: var(--amber);"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-kicker kicker-teal">Feeds</span>
+          <span id="feedTargetLabel" class="card-target">Target 8–12</span>
+        </div>
+        <div class="card-metric-row">
+          <span id="feedCount" class="card-metric">0</span>
+          <span id="feedBreakdown" class="card-sub">0 BF · 0 Bottle</span>
+        </div>
+        <div class="progress-track">
+          <div id="feedProgress" class="progress-fill" style="width: 0%; background: var(--teal);"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-kicker kicker-violet">Pumped &amp; Stash</span>
+          <span class="card-target">Available</span>
+        </div>
+        <div class="card-metric-row">
+          <span id="stashTotal" class="card-metric">0 ml</span>
+          <span id="pumpedToday" class="card-sub">Today: 0 ml</span>
+        </div>
+        <div id="bottleTodaySummary" class="card-sub" style="margin-top: 8px;">Given today: 0 ml</div>
+      </div>
+    </section>
+
+    <div class="workspace-grid">
+      <!-- Left: Quick-Log Dock -->
+      <section class="card logger-card">
+        <div class="tabs-bar">
+          <button type="button" data-tab="diaper" class="log-tab tab-active">Diaper</button>
+          <button type="button" data-tab="breastfeed" class="log-tab">Breastfeed</button>
+          <button type="button" data-tab="pump" class="log-tab">Pump</button>
+          <button type="button" data-tab="bottle" class="log-tab">Give Milk</button>
+        </div>
+
+        <div class="logger-body">
+          <!-- Diaper Form -->
+          <form id="diaperForm" class="form-stack">
+            <div>
+              <label class="field-label">Diaper Type</label>
+              <div class="grid-3">
+                <button type="button" data-diaper-type="pee" class="chip-btn diaper-type-btn chip-active">💧 Pee</button>
+                <button type="button" data-diaper-type="poop" class="chip-btn diaper-type-btn">💩 Poop</button>
+                <button type="button" data-diaper-type="both" class="chip-btn diaper-type-btn">💧+💩 Both</button>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="field-label">Amount</label>
+                <select id="diaperSize" class="select">
+                  <option value="Normal">Normal</option>
+                  <option value="Light">Light</option>
+                  <option value="Heavy">Heavy</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Time</label>
+                <input id="diaperTime" type="time" class="input" />
+              </div>
+            </div>
+
+            <div id="poopColorWrap" class="hidden">
+              <label class="field-label">Poop Color &amp; Texture</label>
+              <select id="poopColor" class="select">
+                <option value="Yellow / Seedy">Yellow / Seedy (Normal breastfed)</option>
+                <option value="Mustard / Loose">Mustard / Loose</option>
+                <option value="Greenish">Greenish</option>
+                <option value="Brown / Tan">Brown / Tan</option>
+                <option value="Dark / Meconium">Dark / Meconium</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="field-label">Notes (optional)</label>
+              <input id="diaperNote" type="text" placeholder="e.g., pale urine, seedy..." class="input" />
+            </div>
+
+            <button type="submit" class="btn-primary">Log Diaper</button>
+          </form>
+
+          <!-- Breastfeed Form -->
+          <form id="bfForm" class="form-stack hidden">
+            <div class="timer-box">
+              <div>
+                <div style="font-size: 0.72rem; font-weight: 600; color: var(--teal-dark);">Live Nursing Timer</div>
+                <div id="bfTimerDisplay" class="timer-val">00:00</div>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button id="bfTimerStartBtn" type="button" class="btn-sm btn-teal" style="color:#fff;">Start</button>
+                <button id="bfTimerResetBtn" type="button" class="btn-sm btn-outline">Reset</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Side</label>
+              <div class="grid-3">
+                <button type="button" data-bf-side="Left" class="chip-btn bf-side-btn">Left</button>
+                <button type="button" data-bf-side="Right" class="chip-btn bf-side-btn">Right</button>
+                <button type="button" data-bf-side="Both" class="chip-btn bf-side-btn chip-active">Both</button>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="field-label">Duration (min)</label>
+                <input id="bfDuration" type="number" min="1" max="180" value="15" class="input" />
+              </div>
+              <div>
+                <label class="field-label">Start Time</label>
+                <input id="bfTime" type="time" class="input" />
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Baby Cue / Fullness</label>
+              <select id="bfCue" class="select">
+                <option value="Calm / Satisfied">Calm / Satisfied</option>
+                <option value="Looked too full (stopped early)">Looked too full (stopped early)</option>
+                <option value="Still hungry">Still hungry</option>
+                <option value="Sleepy at breast">Sleepy at breast</option>
+                <option value="Fussy / Latching difficulty">Fussy / Latching difficulty</option>
+              </select>
+            </div>
+
+            <div class="post-pump-box">
+              <label class="toggle-row">
+                <span>Pumped soon after this feed?</span>
+                <input id="bfAlsoPump" type="checkbox" style="width: 16px; height: 16px; accent-color: var(--violet);" />
+              </label>
+              <div id="bfPumpFields" class="grid-2 hidden">
+                <div>
+                  <label class="field-label">Pumped (<span class="unit-label">ml</span>)</label>
+                  <input id="bfPumpVol" type="number" step="any" min="0" placeholder="e.g., 45" class="input" />
+                </div>
+                <div>
+                  <label class="field-label">Pump Side</label>
+                  <select id="bfPumpSide" class="select">
+                    <option value="Both">Both</option>
+                    <option value="Left">Left</option>
+                    <option value="Right">Right</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Notes (optional)</label>
+              <input id="bfNote" type="text" placeholder="e.g., good latch, burped well..." class="input" />
+            </div>
+
+            <button type="submit" class="btn-primary btn-teal">Log Breastfeed</button>
+          </form>
+
+          <!-- Pump Form -->
+          <form id="pumpForm" class="form-stack hidden">
+            <div class="grid-2">
+              <div>
+                <label class="field-label">Volume (<span class="unit-label">ml</span>)</label>
+                <input id="pumpVol" type="number" step="any" min="1" required placeholder="e.g., 50" class="input" />
+              </div>
+              <div>
+                <label class="field-label">Duration (min)</label>
+                <input id="pumpDuration" type="number" min="1" max="120" value="15" class="input" />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="field-label">Side</label>
+                <select id="pumpSide" class="select">
+                  <option value="Both">Both</option>
+                  <option value="Left">Left</option>
+                  <option value="Right">Right</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Time</label>
+                <input id="pumpTime" type="time" class="input" />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="field-label">Store In</label>
+                <select id="pumpStorage" class="select">
+                  <option value="Fridge">Fridge Stash</option>
+                  <option value="Room Temp">Room Temp (use soon)</option>
+                  <option value="Freezer">Freezer</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:flex-end; padding-bottom: 6px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.75rem; font-weight:600; cursor:pointer;">
+                  <input id="pumpPostBf" type="checkbox" checked style="width:16px; height:16px; accent-color:var(--violet);" />
+                  <span>Soon after breastfeeding</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Notes (optional)</label>
+              <input id="pumpNote" type="text" placeholder="e.g., pumped after morning feed..." class="input" />
+            </div>
+
+            <button type="submit" class="btn-primary btn-violet">Log Pump &amp; Add to Stash</button>
+          </form>
+
+          <!-- Bottle Form -->
+          <form id="bottleForm" class="form-stack hidden">
+            <div>
+              <label class="field-label">Milk Type</label>
+              <div class="grid-2">
+                <button type="button" data-milk-type="EBM" class="chip-btn milk-type-btn chip-active">Expressed Breast Milk</button>
+                <button type="button" data-milk-type="Formula" class="chip-btn milk-type-btn">Formula</button>
+              </div>
+            </div>
+
+            <div id="stashSelectWrap">
+              <label class="field-label">Use Pumped Stash Batch</label>
+              <select id="bottleStashId" class="select">
+                <option value="">Don't deduct from stash (manual)</option>
+              </select>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="field-label">Amount Given (<span class="unit-label">ml</span>)</label>
+                <input id="bottleVol" type="number" step="any" min="1" required placeholder="e.g., 30" class="input" />
+              </div>
+              <div>
+                <label class="field-label">Time</label>
+                <input id="bottleTime" type="time" class="input" />
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Reason / Baby Cue</label>
+              <select id="bottleCue" class="select">
+                <option value="Top-up after looking too full earlier">Top-up after looking too full earlier</option>
+                <option value="Still hungry after breastfeed">Still hungry after breastfeed</option>
+                <option value="Standalone bottle feed">Standalone bottle feed</option>
+                <option value="Night feed">Night feed</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="field-label">Notes (optional)</label>
+              <input id="bottleNote" type="text" placeholder="e.g., took 30 ml calmly..." class="input" />
+            </div>
+
+            <button type="submit" class="btn-primary btn-teal">Log Bottle Feed</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Right Column -->
+      <div class="right-stack">
+        <!-- Pumped Milk Stash -->
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">Pumped Breast Milk Stash</h2>
+              <p class="section-sub">Saved from pump sessions — tap "Give Now" when ready to feed</p>
+            </div>
+            <span id="stashBadge" class="pill pill-violet">0 ml ready</span>
+          </div>
+          <div id="stashList" class="stash-list"></div>
+        </section>
+
+        <!-- Day Timeline -->
+        <section class="card">
+          <div class="section-head">
+            <h2 id="timelineTitle" class="section-title">Day 7 Timeline</h2>
+            <div class="filter-row">
+              <button type="button" data-filter="all" class="filter-btn chip-active">All</button>
+              <button type="button" data-filter="pee" class="filter-btn">Pee</button>
+              <button type="button" data-filter="poop" class="filter-btn">Poop</button>
+              <button type="button" data-filter="breastfeed" class="filter-btn">Breastfeed</button>
+              <button type="button" data-filter="pump" class="filter-btn">Pump</button>
+              <button type="button" data-filter="bottle" class="filter-btn">Bottle</button>
+            </div>
+          </div>
+          <div id="timelineList" class="timeline-list"></div>
+        </section>
+
+        <!-- Multi-Day History -->
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">Daily History (Day 7+)</h2>
+              <p class="section-sub">Tap any day to view or add logs</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>Pee</th>
+                  <th>Poop</th>
+                  <th>Feeds</th>
+                  <th>Pumped</th>
+                  <th>Bottle</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings & Backup Modal -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <h3 style="font-size:1rem; font-weight:700;">Settings &amp; Local Backup</h3>
+        <button id="closeSettingsBtn" type="button" style="font-size:1.25rem; color:var(--text-muted);">&times;</button>
+      </div>
+      <div class="form-stack">
+        <div>
+          <label class="field-label">Baby Name</label>
+          <input id="settingBabyName" type="text" class="input" />
+        </div>
+        <div>
+          <label class="field-label">Birth Date (Day 0; Day 7 = +7 days)</label>
+          <input id="settingBirthDate" type="date" class="input" />
+        </div>
+        <div class="grid-3">
+          <div>
+            <label class="field-label">Pee Target</label>
+            <input id="settingPeeTarget" type="number" min="1" class="input" />
+          </div>
+          <div>
+            <label class="field-label">Poop Target</label>
+            <input id="settingPoopTarget" type="number" min="1" class="input" />
+          </div>
+          <div>
+            <label class="field-label">Feed Target</label>
+            <input id="settingFeedTarget" type="number" min="1" class="input" />
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <button id="backupJsonBtn" type="button" class="btn-outline">Backup JSON</button>
+        <label class="btn-outline" style="cursor:pointer;">
+          Restore JSON
+          <input id="restoreJsonInput" type="file" accept=".json,application/json" class="hidden" />
+        </label>
+        <button id="clearAllBtn" type="button" class="btn-outline" style="color:var(--rose); border-color:var(--rose-border);">Clear All</button>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button id="saveSettingsBtn" type="button" class="btn-sm" style="background:var(--text); color:#fff; padding:9px 16px;">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Clear Modal -->
+  <div id="confirmModal" class="modal-backdrop hidden">
+    <div class="modal-card" style="max-width:340px;">
+      <h3 style="font-size:1rem; font-weight:700;">Clear all logged data?</h3>
+      <p style="font-size:0.75rem; color:var(--text-muted);">This removes all diaper, feeding, pump, and stash entries stored on this device. Export a JSON/CSV backup first if needed.</p>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button id="cancelClearBtn" type="button" class="btn-outline">Cancel</button>
+        <button id="confirmClearBtn" type="button" class="btn-sm" style="background:var(--rose); color:#fff;">Clear Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'newborn_care_log_v1';
+      const ML_PER_OZ = 29.5735;
+
+      // Request persistent storage on Android/Chrome so restarts & low-disk cleanup don't evict logs
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(() => {});
+      }
+
+      // Register Service Worker for offline PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      function getTodayISO() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+
+      function getCurrentTimeHM() {
+        const now = new Date();
+        return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+
+      function addDaysISO(isoDate, delta) {
+        const [y, m, d] = isoDate.split('-').map(Number);
+        const dt = new Date(y, m - 1, d + delta);
+        return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      }
+
+      function diffDaysISO(startISO, endISO) {
+        const [sy, sm, sd] = startISO.split('-').map(Number);
+        const [ey, em, ed] = endISO.split('-').map(Number);
+        return Math.round((new Date(ey, em - 1, ed) - new Date(sy, sm - 1, sd)) / 86400000);
+      }
+
+      function defaultState() {
+        const today = getTodayISO();
+        return {
+          settings: {
+            babyName: 'Baby',
+            birthDate: addDaysISO(today, -7),
+            unit: 'ml',
+            peeTarget: 6,
+            poopTarget: 3,
+            feedTarget: 8
+          },
+          selectedDate: today,
+          activeTab: 'diaper',
+          activeFilter: 'all',
+          diaperType: 'pee',
+          bfSide: 'Both',
+          milkType: 'EBM',
+          logs: [],
+          stash: []
+        };
+      }
+
+      let state = defaultState();
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.settings && Array.isArray(parsed.logs)) {
+            state = {
+              ...defaultState(),
+              ...parsed,
+              settings: { ...defaultState().settings, ...parsed.settings },
+              stash: Array.isArray(parsed.stash) ? parsed.stash : []
+            };
+          }
+        }
+      } catch (e) {}
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {}
+      }
+
+      function uid() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      }
+
+      function toMl(val) {
+        const num = parseFloat(val);
+        if (isNaN(num) || num <= 0) return 0;
+        return state.settings.unit === 'oz' ? Math.round(num * ML_PER_OZ) : Math.round(num);
+      }
+
+      function formatVol(ml) {
+        const v = Number(ml) || 0;
+        if (state.settings.unit === 'oz') return (v / ML_PER_OZ).toFixed(1) + ' oz';
+        return Math.round(v) + ' ml';
+      }
+
+      function formatTime12(hm) {
+        if (!hm) return '';
+        const [hStr, mStr] = hm.split(':');
+        let h = parseInt(hStr, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${h}:${mStr} ${ampm}`;
+      }
+
+      function timeAgoText(dateISO, hm) {
+        if (!dateISO || !hm) return '';
+        const [y, m, d] = dateISO.split('-').map(Number);
+        const [hh, mm] = hm.split(':').map(Number);
+        const diffMin = Math.round((Date.now() - new Date(y, m - 1, d, hh, mm).getTime()) / 60000);
+        if (diffMin < 0) return 'Scheduled';
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return `${diffMin}m ago`;
+        const hrs = Math.floor(diffMin / 60);
+        const mins = diffMin % 60;
+        if (hrs < 24) return mins > 0 ? `${hrs}h ${mins}m ago` : `${hrs}h ago`;
+        return `${Math.floor(hrs / 24)}d ago`;
+      }
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+      }
+
+      // Live Timer
+      let bfTimerInterval = null;
+      let bfTimerSeconds = 0;
+      let bfTimerRunning = false;
+
+      function updateTimerUI() {
+        const mins = String(Math.floor(bfTimerSeconds / 60)).padStart(2, '0');
+        const secs = String(bfTimerSeconds % 60).padStart(2, '0');
+        document.getElementById('bfTimerDisplay').textContent = `${mins}:${secs}`;
+        document.getElementById('bfTimerStartBtn').textContent = bfTimerRunning ? 'Pause' : (bfTimerSeconds > 0 ? 'Resume' : 'Start');
+      }
+
+      document.getElementById('bfTimerStartBtn').addEventListener('click', () => {
+        if (bfTimerRunning) {
+          clearInterval(bfTimerInterval);
+          bfTimerInterval = null;
+          bfTimerRunning = false;
+          if (bfTimerSeconds >= 30) {
+            document.getElementById('bfDuration').value = Math.max(1, Math.round(bfTimerSeconds / 60));
+          }
+        } else {
+          bfTimerRunning = true;
+          if (bfTimerSeconds === 0) document.getElementById('bfTime').value = getCurrentTimeHM();
+          bfTimerInterval = setInterval(() => {
+            bfTimerSeconds += 1;
+            updateTimerUI();
+          }, 1000);
+        }
+        updateTimerUI();
+      });
+
+      document.getElementById('bfTimerResetBtn').addEventListener('click', () => {
+        if (bfTimerInterval) clearInterval(bfTimerInterval);
+        bfTimerInterval = null;
+        bfTimerRunning = false;
+        bfTimerSeconds = 0;
+        updateTimerUI();
+      });
+
+      function syncFormTimes() {
+        const nowHM = getCurrentTimeHM();
+        ['diaperTime', 'bfTime', 'pumpTime', 'bottleTime'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el && !el.value) el.value = nowHM;
+        });
+      }
+
+      function setActiveTab(tabName) {
+        state.activeTab = tabName;
+        document.querySelectorAll('.log-tab').forEach(btn => {
+          btn.classList.toggle('tab-active', btn.dataset.tab === tabName);
+        });
+        document.getElementById('diaperForm').classList.toggle('hidden', tabName !== 'diaper');
+        document.getElementById('bfForm').classList.toggle('hidden', tabName !== 'breastfeed');
+        document.getElementById('pumpForm').classList.toggle('hidden', tabName !== 'pump');
+        document.getElementById('bottleForm').classList.toggle('hidden', tabName !== 'bottle');
+        saveState();
+      }
+
+      document.querySelectorAll('.log-tab').forEach(btn => {
+        btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+      });
+
+      function setDiaperType(type) {
+        state.diaperType = type;
+        document.querySelectorAll('.diaper-type-btn').forEach(btn => {
+          btn.classList.toggle('chip-active', btn.dataset.diaperType === type);
+        });
+        document.getElementById('poopColorWrap').classList.toggle('hidden', type === 'pee');
+      }
+
+      document.querySelectorAll('.diaper-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => setDiaperType(btn.dataset.diaperType));
+      });
+
+      function setBfSide(side) {
+        state.bfSide = side;
+        document.querySelectorAll('.bf-side-btn').forEach(btn => {
+          btn.classList.toggle('chip-active', btn.dataset.bfSide === side);
+        });
+      }
+
+      document.querySelectorAll('.bf-side-btn').forEach(btn => {
+        btn.addEventListener('click', () => setBfSide(btn.dataset.bfSide));
+      });
+
+      document.getElementById('bfAlsoPump').addEventListener('change', (e) => {
+        document.getElementById('bfPumpFields').classList.toggle('hidden', !e.target.checked);
+      });
+
+      function setMilkType(type) {
+        state.milkType = type;
+        document.querySelectorAll('.milk-type-btn').forEach(btn => {
+          btn.classList.toggle('chip-active', btn.dataset.milkType === type);
+        });
+        document.getElementById('stashSelectWrap').classList.toggle('hidden', type !== 'EBM');
+      }
+
+      document.querySelectorAll('.milk-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => setMilkType(btn.dataset.milkType));
+      });
+
+      // Form Submits
+      document.getElementById('diaperForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const time = document.getElementById('diaperTime').value || getCurrentTimeHM();
+        const size = document.getElementById('diaperSize').value;
+        const poopColor = document.getElementById('poopColor').value;
+        const note = document.getElementById('diaperNote').value.trim();
+
+        if (state.diaperType === 'both') {
+          state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'pee', size, note: note ? `With poop · ${note}` : 'With poop' });
+          state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'poop', size, poopColor, note: note ? `With pee · ${note}` : 'With pee' });
+          showToast('Logged pee + poop diaper');
+        } else {
+          state.logs.push({ id: uid(), date: state.selectedDate, time, category: state.diaperType, size, poopColor: state.diaperType === 'poop' ? poopColor : undefined, note });
+          showToast(`Logged ${state.diaperType} diaper`);
+        }
+
+        document.getElementById('diaperNote').value = '';
+        document.getElementById('diaperTime').value = getCurrentTimeHM();
+        saveState();
+        render();
+      });
+
+      document.getElementById('bfForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (bfTimerRunning) {
+          clearInterval(bfTimerInterval);
+          bfTimerInterval = null;
+          bfTimerRunning = false;
+          if (bfTimerSeconds >= 30) document.getElementById('bfDuration').value = Math.max(1, Math.round(bfTimerSeconds / 60));
+          bfTimerSeconds = 0;
+          updateTimerUI();
+        }
+
+        const time = document.getElementById('bfTime').value || getCurrentTimeHM();
+        const duration = parseInt(document.getElementById('bfDuration').value, 10) || 15;
+        const cue = document.getElementById('bfCue').value;
+        const note = document.getElementById('bfNote').value.trim();
+        const bfId = uid();
+
+        state.logs.push({ id: bfId, date: state.selectedDate, time, category: 'breastfeed', side: state.bfSide, duration, cue, note });
+
+        const alsoPump = document.getElementById('bfAlsoPump').checked;
+        const pumpVolMl = toMl(document.getElementById('bfPumpVol').value);
+        if (alsoPump && pumpVolMl > 0) {
+          const pumpSide = document.getElementById('bfPumpSide').value;
+          const stashId = uid();
+          state.stash.push({ id: stashId, date: state.selectedDate, time, totalMl: pumpVolMl, remainingMl: pumpVolMl, storage: 'Fridge', postBf: true, note: `Pumped after ${state.bfSide} breastfeed` });
+          state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'pump', volumeMl: pumpVolMl, side: pumpSide, duration: 10, storage: 'Fridge', postBf: true, linkedBfId: bfId, stashId, note: 'Soon after breastfeeding' });
+          showToast(`Logged breastfeed + ${formatVol(pumpVolMl)} post-feed pump`);
+        } else {
+          showToast('Logged breastfeed');
+        }
+
+        document.getElementById('bfNote').value = '';
+        document.getElementById('bfPumpVol').value = '';
+        document.getElementById('bfAlsoPump').checked = false;
+        document.getElementById('bfPumpFields').classList.add('hidden');
+        document.getElementById('bfTime').value = getCurrentTimeHM();
+        saveState();
+        render();
+      });
+
+      document.getElementById('pumpForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const volMl = toMl(document.getElementById('pumpVol').value);
+        if (volMl <= 0) { showToast('Enter a valid pump volume'); return; }
+        const time = document.getElementById('pumpTime').value || getCurrentTimeHM();
+        const duration = parseInt(document.getElementById('pumpDuration').value, 10) || 15;
+        const side = document.getElementById('pumpSide').value;
+        const storage = document.getElementById('pumpStorage').value;
+        const postBf = document.getElementById('pumpPostBf').checked;
+        const note = document.getElementById('pumpNote').value.trim();
+
+        const stashId = uid();
+        state.stash.push({ id: stashId, date: state.selectedDate, time, totalMl: volMl, remainingMl: volMl, storage, postBf, note });
+        state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'pump', volumeMl: volMl, side, duration, storage, postBf, stashId, note });
+
+        document.getElementById('pumpVol').value = '';
+        document.getElementById('pumpNote').value = '';
+        document.getElementById('pumpTime').value = getCurrentTimeHM();
+        showToast(`Logged ${formatVol(volMl)} pump & added to stash`);
+        saveState();
+        render();
+      });
+
+      document.getElementById('bottleForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const volMl = toMl(document.getElementById('bottleVol').value);
+        if (volMl <= 0) { showToast('Enter a valid amount given'); return; }
+        const time = document.getElementById('bottleTime').value || getCurrentTimeHM();
+        const cue = document.getElementById('bottleCue').value;
+        const note = document.getElementById('bottleNote').value.trim();
+        const stashId = state.milkType === 'EBM' ? document.getElementById('bottleStashId').value : '';
+
+        let usedFromStash = false;
+        if (stashId) {
+          const batch = state.stash.find(b => b.id === stashId);
+          if (batch) {
+            batch.remainingMl = Math.max(0, batch.remainingMl - volMl);
+            usedFromStash = true;
+          }
+        }
+
+        state.logs.push({ id: uid(), date: state.selectedDate, time, category: 'bottle', milkType: state.milkType, volumeMl: volMl, cue, stashId: usedFromStash ? stashId : undefined, note });
+
+        document.getElementById('bottleVol').value = '';
+        document.getElementById('bottleNote').value = '';
+        document.getElementById('bottleTime').value = getCurrentTimeHM();
+        showToast(`Logged ${formatVol(volMl)} ${state.milkType === 'EBM' ? 'expressed milk' : 'formula'} feed`);
+        saveState();
+        render();
+      });
+
+      // Filters & Nav
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.activeFilter = btn.dataset.filter;
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('chip-active', b.dataset.filter === state.activeFilter));
+          saveState();
+          renderTimeline();
+        });
+      });
+
+      document.getElementById('prevDayBtn').addEventListener('click', () => { state.selectedDate = addDaysISO(state.selectedDate, -1); saveState(); render(); });
+      document.getElementById('nextDayBtn').addEventListener('click', () => { state.selectedDate = addDaysISO(state.selectedDate, 1); saveState(); render(); });
+      document.getElementById('todayBtn').addEventListener('click', () => { state.selectedDate = getTodayISO(); saveState(); render(); });
+
+      document.getElementById('unitMlBtn').addEventListener('click', () => { state.settings.unit = 'ml'; saveState(); render(); });
+      document.getElementById('unitOzBtn').addEventListener('click', () => { state.settings.unit = 'oz'; saveState(); render(); });
+
+      // Settings, Backup & Clear
+      document.getElementById('settingsBtn').addEventListener('click', () => {
+        document.getElementById('settingBabyName').value = state.settings.babyName;
+        document.getElementById('settingBirthDate').value = state.settings.birthDate;
+        document.getElementById('settingPeeTarget').value = state.settings.peeTarget;
+        document.getElementById('settingPoopTarget').value = state.settings.poopTarget;
+        document.getElementById('settingFeedTarget').value = state.settings.feedTarget;
+        document.getElementById('settingsModal').classList.remove('hidden');
+      });
+      document.getElementById('closeSettingsBtn').addEventListener('click', () => document.getElementById('settingsModal').classList.add('hidden'));
+      document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+        state.settings.babyName = document.getElementById('settingBabyName').value.trim() || 'Baby';
+        state.settings.birthDate = document.getElementById('settingBirthDate').value || state.settings.birthDate;
+        state.settings.peeTarget = Math.max(1, parseInt(document.getElementById('settingPeeTarget').value, 10) || 6);
+        state.settings.poopTarget = Math.max(1, parseInt(document.getElementById('settingPoopTarget').value, 10) || 3);
+        state.settings.feedTarget = Math.max(1, parseInt(document.getElementById('settingFeedTarget').value, 10) || 8);
+        document.getElementById('settingsModal').classList.add('hidden');
+        saveState();
+        render();
+        showToast('Settings saved');
+      });
+
+      document.getElementById('backupJsonBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `newborn_care_backup_${getTodayISO()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Backup JSON downloaded');
+      });
+
+      document.getElementById('restoreJsonInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            if (parsed && parsed.settings && Array.isArray(parsed.logs)) {
+              state = { ...defaultState(), ...parsed };
+              saveState();
+              render();
+              document.getElementById('settingsModal').classList.add('hidden');
+              showToast('Backup restored');
+            } else {
+              showToast('Invalid backup file');
+            }
+          } catch (err) {
+            showToast('Could not read JSON file');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById('clearAllBtn').addEventListener('click', () => {
+        document.getElementById('settingsModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.remove('hidden');
+      });
+      document.getElementById('cancelClearBtn').addEventListener('click', () => document.getElementById('confirmModal').classList.add('hidden'));
+      document.getElementById('confirmClearBtn').addEventListener('click', () => {
+        state.logs = [];
+        state.stash = [];
+        document.getElementById('confirmModal').classList.add('hidden');
+        saveState();
+        render();
+        showToast('All data cleared');
+      });
+
+      document.getElementById('exportCsvBtn').addEventListener('click', () => {
+        if (state.logs.length === 0) { showToast('No logs to export yet'); return; }
+        const headers = ['Date', 'DayOfLife', 'Time', 'Category', 'Details', 'Volume_ml', 'Duration_min', 'Cue_or_Color', 'Notes'];
+        const rows = state.logs.slice().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(log => {
+          const dayNum = diffDaysISO(state.settings.birthDate, log.date);
+          let details = '', vol = '', dur = '', cue = '';
+          if (log.category === 'pee') details = log.size || 'Normal';
+          else if (log.category === 'poop') { details = log.size || 'Normal'; cue = log.poopColor || ''; }
+          else if (log.category === 'breastfeed') { details = log.side || ''; dur = log.duration || ''; cue = log.cue || ''; }
+          else if (log.category === 'pump') { details = `${log.side || ''} (${log.storage || 'Fridge'})${log.postBf ? ' Post-BF' : ''}`; vol = log.volumeMl || ''; dur = log.duration || ''; }
+          else if (log.category === 'bottle') { details = log.milkType || 'EBM'; vol = log.volumeMl || ''; cue = log.cue || ''; }
+          return [log.date, dayNum, log.time, log.category, details, vol, dur, cue, log.note || ''].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+        });
+        const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${state.settings.babyName.toLowerCase().replace(/\s+/g, '_')}_care_log.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Exported CSV');
+      });
+
+      // Render Stash
+      function renderStash() {
+        const available = state.stash.filter(b => b.remainingMl > 0);
+        const totalStashMl = available.reduce((sum, b) => sum + b.remainingMl, 0);
+        document.getElementById('stashTotal').textContent = formatVol(totalStashMl);
+        document.getElementById('stashBadge').textContent = `${formatVol(totalStashMl)} ready`;
+
+        const select = document.getElementById('bottleStashId');
+        const prevVal = select.value;
+        select.innerHTML = '<option value="">Don\'t deduct from stash (manual)</option>';
+        available.slice().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          const dayNum = diffDaysISO(state.settings.birthDate, b.date);
+          opt.textContent = `Day ${dayNum} · ${formatTime12(b.time)} (${formatVol(b.remainingMl)} left · ${b.storage})`;
+          select.appendChild(opt);
+        });
+        if (available.some(b => b.id === prevVal)) select.value = prevVal;
+        else if (available.length > 0) select.value = available[0].id;
+
+        const listEl = document.getElementById('stashList');
+        if (available.length === 0) {
+          listEl.innerHTML = '<div class="empty-box">No pumped milk in stash yet. Log a pump session to track available milk for later feeds.</div>';
+          return;
+        }
+
+        listEl.innerHTML = available.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)).map(b => {
+          const dayNum = diffDaysISO(state.settings.birthDate, b.date);
+          return `
+            <div class="stash-item">
+              <div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <span style="font-size:0.78rem; font-weight:700;">${formatVol(b.remainingMl)}</span>
+                  <span style="font-size:0.7rem; color:var(--text-muted);">of ${formatVol(b.totalMl)}</span>
+                  <span class="pill pill-violet">${b.storage}</span>
+                  ${b.postBf ? '<span class="pill pill-teal">Post-BF</span>' : ''}
+                </div>
+                <p style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Day ${dayNum} · ${formatTime12(b.time)} (${timeAgoText(b.date, b.time)})</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button type="button" data-give-stash="${b.id}" class="btn-sm btn-teal" style="color:#fff;">Give Now</button>
+                <button type="button" data-clear-stash="${b.id}" class="btn-outline" title="Mark finished">&times;</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('stashList').addEventListener('click', (e) => {
+        const giveBtn = e.target.closest('[data-give-stash]');
+        if (giveBtn) {
+          const id = giveBtn.dataset.giveStash;
+          const batch = state.stash.find(b => b.id === id);
+          if (batch) {
+            setActiveTab('bottle');
+            setMilkType('EBM');
+            document.getElementById('bottleStashId').value = id;
+            document.getElementById('bottleVol').value = state.settings.unit === 'oz' ? (batch.remainingMl / ML_PER_OZ).toFixed(1) : Math.round(batch.remainingMl);
+            document.getElementById('bottleTime').value = getCurrentTimeHM();
+            document.getElementById('bottleVol').focus();
+            showToast('Ready to log expressed milk feed');
+          }
+          return;
+        }
+        const clearBtn = e.target.closest('[data-clear-stash]');
+        if (clearBtn) {
+          const batch = state.stash.find(b => b.id === clearBtn.dataset.clearStash);
+          if (batch) { batch.remainingMl = 0; saveState(); render(); showToast('Batch removed from active stash'); }
+        }
+      });
+
+      // Render Timeline
+      function renderTimeline() {
+        const dayNum = diffDaysISO(state.settings.birthDate, state.selectedDate);
+        document.getElementById('timelineTitle').textContent = `Day ${dayNum} Timeline`;
+        let dayLogs = state.logs.filter(l => l.date === state.selectedDate);
+        if (state.activeFilter !== 'all') dayLogs = dayLogs.filter(l => l.category === state.activeFilter);
+        dayLogs.sort((a, b) => b.time.localeCompare(a.time));
+
+        const listEl = document.getElementById('timelineList');
+        if (dayLogs.length === 0) {
+          listEl.innerHTML = `<div class="empty-box">No ${state.activeFilter === 'all' ? '' : state.activeFilter + ' '}entries logged for Day ${dayNum} yet.</div>`;
+          return;
+        }
+
+        const meta = {
+          pee: { label: 'Pee', cls: 'cat-pee', icon: '💧' },
+          poop: { label: 'Poop', cls: 'cat-poop', icon: '💩' },
+          breastfeed: { label: 'Breastfeed', cls: 'cat-bf', icon: '🤱' },
+          pump: { label: 'Pump', cls: 'cat-pump', icon: '🧴' },
+          bottle: { label: 'Bottle', cls: 'cat-bottle', icon: '🍼' }
+        };
+
+        listEl.innerHTML = dayLogs.map(log => {
+          const m = meta[log.category] || { label: log.category, cls: '', icon: '•' };
+          let summary = '', sub = '';
+          if (log.category === 'pee') summary = `${log.size || 'Normal'} wet diaper`;
+          else if (log.category === 'poop') summary = `${log.size || 'Normal'} · ${log.poopColor || 'Yellow'}`;
+          else if (log.category === 'breastfeed') { summary = `${log.side} · ${log.duration} min`; sub = log.cue || ''; }
+          else if (log.category === 'pump') { summary = `${formatVol(log.volumeMl)} (${log.side}, ${log.duration} min)`; sub = `${log.storage || 'Fridge'}${log.postBf ? ' · Post-breastfeed pump' : ''}`; }
+          else if (log.category === 'bottle') { summary = `${formatVol(log.volumeMl)} ${log.milkType === 'EBM' ? 'Expressed Milk' : 'Formula'}`; sub = `${log.cue || ''}${log.stashId ? ' · From stash' : ''}`; }
+
+          return `
+            <div class="timeline-item">
+              <div class="timeline-left">
+                <div class="cat-icon ${m.cls}">${m.icon}</div>
+                <div>
+                  <div style="font-size:0.78rem;"><strong>${m.label}</strong> · ${summary}</div>
+                  ${sub ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${sub}</div>` : ''}
+                  ${log.note ? `<div style="font-size:0.7rem; color:#475569; font-style:italic; margin-top:2px;">"${log.note}"</div>` : ''}
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                <span style="font-size:0.72rem; color:var(--text-muted); font-weight:500;">${formatTime12(log.time)}</span>
+                <button type="button" data-delete-log="${log.id}" style="font-size:1rem; color:#94a3b8;" title="Delete">&times;</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('timelineList').addEventListener('click', (e) => {
+        const delBtn = e.target.closest('[data-delete-log]');
+        if (delBtn) {
+          const id = delBtn.dataset.deleteLog;
+          const log = state.logs.find(l => l.id === id);
+          if (log && log.category === 'bottle' && log.stashId) {
+            const batch = state.stash.find(b => b.id === log.stashId);
+            if (batch) batch.remainingMl = Math.min(batch.totalMl, batch.remainingMl + (log.volumeMl || 0));
+          }
+          state.logs = state.logs.filter(l => l.id !== id);
+          saveState();
+          render();
+          showToast('Entry removed');
+        }
+      });
+
+      function renderHistory() {
+        const datesSet = new Set([state.selectedDate, getTodayISO()]);
+        state.logs.forEach(l => datesSet.add(l.date));
+        const dates = Array.from(datesSet).sort((a, b) => b.localeCompare(a));
+
+        document.getElementById('historyTableBody').innerHTML = dates.map(d => {
+          const dayNum = diffDaysISO(state.settings.birthDate, d);
+          const dayLogs = state.logs.filter(l => l.date === d);
+          const pee = dayLogs.filter(l => l.category === 'pee').length;
+          const poop = dayLogs.filter(l => l.category === 'poop').length;
+          const feeds = dayLogs.filter(l => l.category === 'breastfeed' || l.category === 'bottle').length;
+          const pumped = dayLogs.filter(l => l.category === 'pump').reduce((s, l) => s + (l.volumeMl || 0), 0);
+          const bottle = dayLogs.filter(l => l.category === 'bottle').reduce((s, l) => s + (l.volumeMl || 0), 0);
+          return `
+            <tr data-jump-date="${d}" class="${d === state.selectedDate ? 'selected-row' : ''}">
+              <td>Day ${dayNum} <span style="color:var(--text-muted); font-weight:400;">(${d.slice(5)})</span></td>
+              <td style="color:var(--sky);">${pee}</td>
+              <td style="color:var(--amber);">${poop}</td>
+              <td style="color:var(--teal);">${feeds}</td>
+              <td style="color:var(--violet);">${formatVol(pumped)}</td>
+              <td style="color:#059669;">${formatVol(bottle)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('historyTableBody').addEventListener('click', (e) => {
+        const row = e.target.closest('[data-jump-date]');
+        if (row) { state.selectedDate = row.dataset.jumpDate; saveState(); render(); }
+      });
+
+      function render() {
+        const dayNum = diffDaysISO(state.settings.birthDate, state.selectedDate);
+        document.getElementById('headerBabyName').textContent = `${state.settings.babyName}'s Care Log`;
+        document.getElementById('dayBadge').textContent = `Day ${dayNum}`;
+
+        const [y, m, d] = state.selectedDate.split('-').map(Number);
+        document.getElementById('headerDateSub').textContent = new Date(y, m - 1, d).toLocaleDateString('en-US', {
+          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+        });
+
+        document.getElementById('unitMlBtn').classList.toggle('active', state.settings.unit === 'ml');
+        document.getElementById('unitOzBtn').classList.toggle('active', state.settings.unit === 'oz');
+        document.querySelectorAll('.unit-label').forEach(el => { el.textContent = state.settings.unit; });
+
+        const dayLogs = state.logs.filter(l => l.date === state.selectedDate);
+        const pees = dayLogs.filter(l => l.category === 'pee').sort((a, b) => b.time.localeCompare(a.time));
+        const poops = dayLogs.filter(l => l.category === 'poop').sort((a, b) => b.time.localeCompare(a.time));
+        const bfs = dayLogs.filter(l => l.category === 'breastfeed');
+        const bottles = dayLogs.filter(l => l.category === 'bottle');
+        const pumps = dayLogs.filter(l => l.category === 'pump');
+
+        document.getElementById('peeTargetLabel').textContent = `Target ${state.settings.peeTarget}+`;
+        document.getElementById('peeCount').textContent = pees.length;
+        document.getElementById('peeLast').textContent = pees.length ? `Last: ${timeAgoText(pees[0].date, pees[0].time)}` : 'No logs yet';
+        document.getElementById('peeProgress').style.width = `${Math.min(100, Math.round((pees.length / state.settings.peeTarget) * 100))}%`;
+
+        document.getElementById('poopTargetLabel').textContent = `Target ${state.settings.poopTarget}+`;
+        document.getElementById('poopCount').textContent = poops.length;
+        document.getElementById('poopLast').textContent = poops.length ? `Last: ${timeAgoText(poops[0].date, poops[0].time)}` : 'No logs yet';
+        document.getElementById('poopProgress').style.width = `${Math.min(100, Math.round((poops.length / state.settings.poopTarget) * 100))}%`;
+
+        const totalFeeds = bfs.length + bottles.length;
+        document.getElementById('feedTargetLabel').textContent = `Target ${state.settings.feedTarget}–12`;
+        document.getElementById('feedCount').textContent = totalFeeds;
+        document.getElementById('feedBreakdown').textContent = `${bfs.length} BF · ${bottles.length} Bottle`;
+        document.getElementById('feedProgress').style.width = `${Math.min(100, Math.round((totalFeeds / state.settings.feedTarget) * 100))}%`;
+
+        const pumpedTodayMl = pumps.reduce((s, l) => s + (l.volumeMl || 0), 0);
+        const bottleTodayMl = bottles.reduce((s, l) => s + (l.volumeMl || 0), 0);
+        document.getElementById('pumpedToday').textContent = `Today: ${formatVol(pumpedTodayMl)}`;
+        document.getElementById('bottleTodaySummary').textContent = `Given today: ${formatVol(bottleTodayMl)}`;
+
+        renderStash();
+        renderTimeline();
+        renderHistory();
+      }
+
+      syncFormTimes();
+      setActiveTab(state.activeTab || 'diaper');
+      setDiaperType(state.diaperType || 'pee');
+      setBfSide(state.bfSide || 'Both');
+      setMilkType(state.milkType || 'EBM');
+      render();
+    })();
+  </script>
+</body>
+</html>
